@@ -10,25 +10,35 @@ class V1::QueriesController < ApplicationController
 
   def show
     @query = Query.find(params[:id])
-    @results = @query.run
-    @results_hash = @results.map(&:to_hash).map do |r|
-      r.keys.inject({}) {|hsh, k| hsh[k] = r[k].to_s; hsh }
-    end
-    render :json => {:variables => @results_hash.collect(&:keys).flatten.uniq, :results => @results_hash}
+    render_query(@query)
   end
 
   def run
     @query = Query.find(params[:id])
     @query.query = params[:query]
-    @results = @query.run
-    @results_hash = @results.map(&:to_hash).map do |r|
-      r.keys.inject({}) {|hsh, k| hsh[k] = r[k].to_s; hsh }
-    end
-    render :json => {:variables => @results_hash.collect(&:keys).flatten.uniq, :results => @results_hash}
+    render_query(@query)
   end
 
   def data
     @query = Query.find(params[:id])
     render :json => @query
+  end
+
+  def preview
+    @query = Query.new(params[:query])
+    render_query(@query)
+  end
+
+  private
+
+  def render_query(query)
+    results_hash = process_results(query.run)
+    render :json => {:variables => results_hash.collect(&:keys).flatten.uniq, :results => results_hash}
+  end
+
+  def process_results(results)
+    results.map(&:to_hash).map do |r|
+      r.keys.inject({}) {|hsh, k| hsh[k] = r[k].to_s; hsh }
+    end
   end
 end

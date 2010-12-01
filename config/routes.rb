@@ -5,6 +5,9 @@ MySparql::Application.routes.draw do
         post 'run'
         get 'data'
       end
+      collection do
+        post 'preview'
+      end
     end
   end
 
