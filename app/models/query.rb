@@ -8,7 +8,7 @@ class Query < ActiveRecord::Base
   validates_presence_of :query
   def normalize_friendly_id(text)
     hash = Digest::SHA2.new << text
-    hash.to_s[0..MAX_HASH_LENGTH]
+    hash.to_s
   end
 
   def run
