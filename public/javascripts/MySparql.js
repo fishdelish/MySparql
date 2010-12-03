@@ -40,17 +40,60 @@ var submit_tutorial_box = function(event, query_id) {
   return false;
 };
 
+var create_submit_button = function() {
+  return $('<input type="submit" value="Run Query" />')
+}
+
+var create_label = function() {
+  var label = $('<label for="query" />')
+  label.text("Query")
+  return label;
+}
+
+var create_textarea = function(query) {
+  var textarea = $('<textarea name="query" style="width:400px;height:100px;" />')
+  textarea.val(query)
+  return textarea;
+}
+
+var create_query_id = function(query_id) {
+  return $('<input type="hidden" name="query_id" value="' + query_id + '" />');
+}
+
+var create_results_header = function() {
+  var header = $('<span/>')
+  header.text("Results")
+  return header;
+}
+
+var create_results_area = function() {
+  return $('<div class="results" />')
+}
+
+var create_break = function() {
+  return $('<br/>')
+}
+
+var create_form = function(query_id, data) {
+  var form = $('<form id="' + query_id + '" method="post" onsubmit="return submit_tutorial_box($(this), \'' + query_id + '\');" />')
+  form.append(create_label());
+  form.append(create_break());
+  form.append(create_textarea(data["query"]["query"]));
+  form.append(create_break());
+  form.append(create_query_id(query_id));
+  form.append(create_submit_button());
+  form.append(create_break());
+  form.append(create_results_header());
+  form.append(create_break());
+  form.append(create_results_area());
+  return form;
+}
+
 var tutorial_formatter = function(query, data) {
   var query_id = $(query).attr("href")
-  var form = '<form id="' + query_id + '" method="post" onsubmit="return submit_tutorial_box($(this), \'' + query_id + '\');">'
-  form += '<label for="query">Query</label><br/>'
-  form += '<textarea name="query">'+data["query"]["query"]+'</textarea><br/>'
-  form += '<input type="hidden" name="query_id" value="' + query_id + '" />'
-  form += '<input type="submit" value="Run Query" /><br/>'
-  form += 'Results<br/>'
-  form += '<div class="results"></div>'
-  form += '</form>'
-  $(query).replaceWith(form)
+  var form = create_form(query_id, data);
+  $(query).replaceWith(form);
+  submit_tutorial_box(form, query_id)
 };
 
 $(document).ready(function() {
