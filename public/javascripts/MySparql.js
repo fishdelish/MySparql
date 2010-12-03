@@ -1,4 +1,12 @@
 var create_table = function(data) {
+      if (data.warnings != undefined) {
+        var error_string = "<span style='color:red;'>Error:"
+        $.each(data.warnings, function(index, error) {
+          error_string += "<br/>" + error;
+        }); 
+        error_string += "</span>"
+        return error_string  
+      }
       var table = "<table><tr>"
       var order = []
       $.each(data.head.vars, function(index, variable_name) {
@@ -25,9 +33,6 @@ var submit_tutorial_box = function(event, query_id) {
   var url = mysparql_path + '/queries/run'
   var success_func = function(data) {
     $("#" + query_id + " .results").html(create_table(data))
-  };
-  var error_func = function() {
-    $("#" + query_id + " .results").html("Error")
   };
 
   $("#" + query_id + " .results").html(mysparql_loading)
