@@ -26,6 +26,11 @@ var submit_tutorial_box = function(event, query_id) {
   var success_func = function(data) {
     $("#" + query_id + " .results").html(create_table(data))
   };
+  var error_func = function() {
+    $("#" + query_id + " .results").html("Error")
+  };
+
+  $("#" + query_id + " .results").html(mysparql_loading)
   $.ajax({type : "POST", data : event.serialize(), dataType : "json", success : success_func, url : url});
   return false;
 };
@@ -71,10 +76,14 @@ $(document).ready(function() {
       formatter(query, data);
     };
 
+    var error_func = function() {
+      $(query).html("Error")
+    }
+
     //Set up the mysparql link to indicate status and to deactivate clicking the link
-    $(query).html("Loading...")
+    $(query).html(mysparql_loading)
     $(query).click(function() {return false;});
-    $.get(url, success_func, "json");  
+    $.ajax({type: "GET", url: url, success: success_func, dataType: "json", error: error_func});  
   });
 });
 
