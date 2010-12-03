@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101027181123) do
+ActiveRecord::Schema.define(:version => 20101203145548) do
 
   create_table "queries", :force => true do |t|
     t.string   "query"
@@ -18,6 +18,8 @@ ActiveRecord::Schema.define(:version => 20101027181123) do
     t.string   "uri_slug"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "cache_json"
+    t.text     "cache_xml"
   end
 
   create_table "slugs", :force => true do |t|

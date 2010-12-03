@@ -1,15 +1,15 @@
 var create_table = function(data) {
       var table = "<table><tr>"
       var order = []
-      $.each(data.variables, function(index, variable_name) {
+      $.each(data.head.vars, function(index, variable_name) {
         table += "<th>" + variable_name + "</th>"
         order.push(variable_name)
       });
       table += "</tr>"
-      $.each(data.results, function(index, result) {
+      $.each(data.results.bindings, function(index, result) {
         table += "<tr>"
         $.each(order, function(index, binding) {
-          table += "<td>" + result[binding] +"</td>"
+          table += "<td>" + result[binding].value +"</td>"
         });
         table += "</tr>"
       });

@@ -10,13 +10,17 @@ class V1::QueriesController < ApplicationController
 
   def show
     @query = Query.find(params[:id])
-    render_query(@query)
+    render_query(@query, true)
   end
 
   def run
     @query = Query.find(params[:id])
-    @query.query = params[:query]
-    render_query(@query)
+    if @query.query == params[:query]
+      render_query(@query, true)
+    else
+      @query.query = params[:query]
+      render_query(@query, false)
+    end
   end
 
   def data
@@ -26,19 +30,15 @@ class V1::QueriesController < ApplicationController
 
   def preview
     @query = Query.new(params[:query])
-    render_query(@query)
+    render_query(@query, false)
   end
 
   private
 
-  def render_query(query)
-    results_hash = process_results(query.run)
-    render :json => {:variables => results_hash.collect(&:keys).flatten.uniq, :results => results_hash}
-  end
-
-  def process_results(results)
-    results.map(&:to_hash).map do |r|
-      r.keys.inject({}) {|hsh, k| hsh[k] = r[k].to_s; hsh }
+  def render_query(query, use_cache)
+    respond_to do |f|
+      f.json { render :text => query.json(use_cache) }
+      f.xml  { render :text => query.xml(use_cache)  }
     end
   end
 end
