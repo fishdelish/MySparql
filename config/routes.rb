@@ -4,6 +4,7 @@ MySparql::Application.routes.draw do
       member do
         post 'run'
         get 'data'
+        post 'param_query'
       end
       collection do
         post 'preview'

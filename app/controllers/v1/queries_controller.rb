@@ -37,6 +37,10 @@ class V1::QueriesController < ApplicationController
     render_query(@query, false)
   end
 
+  def param_query
+
+  end
+
   private
 
   def render_query(query, use_cache)
