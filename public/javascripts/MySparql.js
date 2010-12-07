@@ -105,6 +105,7 @@ var create_parameter_form = function(query_id, data) {
   var form = $('<form id="' + query_id + '" method="post" />')
   $.each(data.parameters, function(index, param) {
     form.append(create_parameter_box(form, param));
+    form.append(create_break());
   });
   form.append(create_break());
   form.append(create_submit_button());

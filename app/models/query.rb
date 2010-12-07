@@ -24,6 +24,13 @@ class Query < ActiveRecord::Base
     query.scan(PARAMETER_REGEX).map {|p| p[1...-1] }
   end
 
+  def substitute_parameters(params)
+    parameters.each do |p|
+      query.gsub!(/=#{p}=/, params[p])
+    end
+    Rails.logger.info("Substituted parameters, generated query #{query}")
+  end
+
   def run(mime_type)
     Rails.logger.info("Querying #{source} with #{query}")
     url = URI.parse(source)

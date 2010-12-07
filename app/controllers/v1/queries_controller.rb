@@ -38,7 +38,9 @@ class V1::QueriesController < ApplicationController
   end
 
   def param_query
-
+    @query = Query.find(params[:id])
+    @query.substitute_parameters(params)
+    render_query(@query, false)
   end
 
   private
