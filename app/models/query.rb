@@ -6,6 +6,7 @@ require 'cgi'
 class Query < ActiveRecord::Base
   MAX_HASH_LENGTH = 10
   has_friendly_id  :query, :use_slug => true, :strip_non_ascii => true
+  PARAMETER_REGEX = /=\w+=/
 
   validates_presence_of :source
   validates_presence_of :query
@@ -13,6 +14,14 @@ class Query < ActiveRecord::Base
   def normalize_friendly_id(text)
     hash = Digest::SHA2.new << text
     hash.to_s
+  end
+
+  def has_parameters?
+    query =~ PARAMETER_REGEX
+  end
+
+  def parameters
+    query.scan(PARAMETER_REGEX).map {|p| p[1...-1] }
   end
 
   def run(mime_type)

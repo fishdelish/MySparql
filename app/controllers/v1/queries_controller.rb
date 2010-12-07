@@ -10,7 +10,11 @@ class V1::QueriesController < ApplicationController
 
   def show
     @query = Query.find(params[:id])
-    render_query(@query, true)
+    if @query.has_parameters?
+      render :json => {:parameters => @query.parameters}
+    else  
+      render_query(@query, true)
+    end
   end
 
   def run
