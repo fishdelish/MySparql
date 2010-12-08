@@ -38,7 +38,17 @@ class V1::QueriesController < ApplicationController
 
   def preview
     @query = Query.new(params[:query])
-    render_query(@query, false)
+    if @query.has_parameters?
+      @query.substitute_parameters(params)
+      Rails.logger.info("Generating preview query #{@query.query}")
+      if @query.has_parameters?
+        render :json => {:parameters => @query.parameters}
+      else
+        render_query(@query, false)
+      end
+    else
+      render_query(@query, false)
+    end
   end
 
   def param_query

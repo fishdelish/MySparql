@@ -26,7 +26,7 @@ class Query < ActiveRecord::Base
 
   def substitute_parameters(params)
     parameters.each do |p|
-      query.gsub!(/=#{p}=/, params[p])
+      query.gsub!(/=#{p}=/, params[p]) if params[p]
     end
     Rails.logger.info("Substituted parameters, generated query #{query}")
   end
