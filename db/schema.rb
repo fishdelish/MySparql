@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101203145548) do
+ActiveRecord::Schema.define(:version => 20101208165101) do
 
   create_table "queries", :force => true do |t|
     t.string   "query"
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(:version => 20101203145548) do
     t.datetime "updated_at"
     t.text     "cache_json"
     t.text     "cache_xml"
+    t.string   "xslt_path"
   end
 
   create_table "slugs", :force => true do |t|

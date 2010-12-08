@@ -2,6 +2,7 @@ require 'digest/sha2'
 require 'net/http'
 require 'uri'
 require 'cgi'
+require 'open-uri'
 
 class Query < ActiveRecord::Base
   MAX_HASH_LENGTH = 10
@@ -31,7 +32,25 @@ class Query < ActiveRecord::Base
     Rails.logger.info("Substituted parameters, generated query #{query}")
   end
 
-  def run(mime_type)
+  def has_xslt?
+    xslt_path
+  end
+
+  def apply_xslt(xml)
+    doc = Nokogiri::XML(xml)
+    sheet = Nokogiri::XSLT(open(xslt_path))
+    sheet.transform(doc) 
+  end
+
+  def run(use_cache)
+    if has_xslt?
+      apply_xslt(xml(use_cache))
+    else
+      json(use_cache)
+    end
+  end
+
+  def send_query(mime_type)
     Rails.logger.info("Querying #{source} with #{query}")
     url = URI.parse(source)
     http = Net::HTTP.new(url.host, url.port)
@@ -43,7 +62,7 @@ class Query < ActiveRecord::Base
       Rails.logger.info("Returning cached json result")
       return cache_json
     else
-      self.cache_json = run("application/sparql-results+json")
+      self.cache_json = send_query("application/sparql-results+json")
       save! if use_cache
       return cache_json
     end
@@ -54,7 +73,7 @@ class Query < ActiveRecord::Base
       Rails.logger.info("Returning cached XML result")
       return cache_xml
     else
-      self.cache_xml = run("application/sparql-results+xml")
+      self.cache_xml = send_query("application/sparql-results+xml")
       save! if use_cache
       return cache_xml
     end

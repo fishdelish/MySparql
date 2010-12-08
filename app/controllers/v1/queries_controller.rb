@@ -66,9 +66,6 @@ class V1::QueriesController < ApplicationController
   private
 
   def render_query(query, use_cache)
-    respond_to do |f|
-      f.json { render :text => query.json(use_cache) }
-      f.xml  { render :text => query.xml(use_cache)  }
-    end
+    render :text => query.run(use_cache)
   end
 end
