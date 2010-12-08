@@ -29,7 +29,11 @@ class V1::QueriesController < ApplicationController
 
   def data
     @query = Query.find(params[:id])
-    render :json => @query
+    if @query.has_parameters?
+      render :json => {:parameters => @query.parameters}
+    else
+      render :json => @query
+    end
   end
 
   def preview
@@ -41,6 +45,12 @@ class V1::QueriesController < ApplicationController
     @query = Query.find(params[:id])
     @query.substitute_parameters(params)
     render_query(@query, false)
+  end
+
+  def param_data
+    @query = Query.find(params[:id])
+    @query.substitute_parameters(params)
+    render :json => @query
   end
 
   private

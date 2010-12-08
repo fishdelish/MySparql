@@ -25,17 +25,17 @@ var create_table = function(data) {
       return table;
 };
 
-var table_formatter = function(query, data) {
+var table_formatter = function(query, query_id, data) {
       $(query).replaceWith(create_table(data));
     };
 
 var submit_tutorial_box = function(event, query_id) {
   var url = mysparql_path + '/queries/run'
   var success_func = function(data) {
-    $("#" + query_id + " .results").html(create_table(data))
+    $("#query-" + query_id + " .results").html(create_table(data))
   };
 
-  $("#" + query_id + " .results").html(mysparql_loading)
+  $("#query-" + query_id + " .results").html(mysparql_loading)
   $.ajax({type : "POST", data : event.serialize(), dataType : "json", success : success_func, url : url});
   return false;
 };
@@ -75,7 +75,7 @@ var create_break = function() {
 }
 
 var create_query_form = function(query_id, data) {
-  var form = $('<form id="' + query_id + '" method="post" onsubmit="return submit_tutorial_box($(this), \'' + query_id + '\');" />')
+  var form = $('<form id="query-' + query_id + '" method="post" onsubmit="return submit_tutorial_box($(this), \'' + query_id + '\');" />')
   form.append(create_label("query", "Query"));
   form.append(create_break());
   form.append(create_textarea(data["query"]["query"]));
@@ -89,8 +89,7 @@ var create_query_form = function(query_id, data) {
   return form;
 }
 
-var tutorial_formatter = function(query, data) {
-  var query_id = $(query).attr("href")
+var tutorial_formatter = function(query, query_id, data) {
   var form = create_query_form(query_id, data);
   $(query).replaceWith(form);
   submit_tutorial_box(form, query_id)
@@ -102,7 +101,7 @@ var create_parameter_box = function (form, param) {
 };
 
 var create_parameter_form = function(query_id, data) {
-  var form = $('<form id="' + query_id + '" method="post" />')
+  var form = $('<form id="param-' + query_id + '" method="post" />')
   $.each(data.parameters, function(index, param) {
     form.append(create_parameter_box(form, param));
     form.append(create_break());
@@ -118,20 +117,23 @@ var create_parameter_form = function(query_id, data) {
 
 var parameter_query = function(query, data, formatter) {
   var query_id = $(query).attr("href")
-  var form = create_parameter_form(query_id, data);
-
+  var query_type = $(query).attr("data-formatter");
+  var form = create_parameter_form(query_id, data, query_type);
   form.submit(function() {
     var url = mysparql_path + '/queries/' + query_id + '/param_query'
+    if (query_type == "tutorial") {
+      url += "?tutorial"
+    }
     var success_func = function(data) {
-      var box = $("#" + query_id + " .results");
+      var box = $("#param-" + query_id + " .results");
       box.html("<div/>")
-      formatter($("#" + query_id + " .results div"), data);
+      formatter($("#param-" + query_id + " .results div"), query_id, data);
     };
     var error_func = function() {
-      $("#" + query_id + " .results div").html("<span style='color:red;'>Error occured</span>")
+      $("#param-" + query_id + " .results div").html("<span style='color:red;'>Error occured</span>")
     }
 
-    $("#" + query_id + " .results").html(mysparql_loading)
+    $("#param-" + query_id + " .results").html(mysparql_loading)
     $.ajax({type : "POST", data : $(form).serialize(), dataType : "json", success : success_func, url : url, error: error_func});
     return false;
   });
@@ -167,7 +169,7 @@ $(document).ready(function() {
       if(data.parameters) {
         parameter_query(query, data, formatter);
       } else {
-        formatter(query, data);
+        formatter(query, query_id, data);
       }
     };
 
