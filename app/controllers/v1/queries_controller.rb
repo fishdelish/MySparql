@@ -38,11 +38,7 @@ class V1::QueriesController < ApplicationController
 
   def data
     @query = Query.find(params[:id])
-    if @query.has_parameters?
-      render :json => {:parameters => @query.parameters}
-    else
-      render :json => @query
-    end
+    render :json => @query
   end
 
   def preview
