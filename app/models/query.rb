@@ -33,12 +33,13 @@ class Query < ActiveRecord::Base
   end
 
   def has_xslt?
-    xslt_path
+    !(xslt_path.blank? && xslt_sheet.blank?)
   end
 
   def apply_xslt(xml)
+    sheet = xslt_sheet || open(xslt_path)
     doc = Nokogiri::XML(xml)
-    sheet = Nokogiri::XSLT(open(xslt_path))
+    sheet = Nokogiri::XSLT(sheet)
     sheet.transform(doc) 
   end
 

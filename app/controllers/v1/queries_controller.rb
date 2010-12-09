@@ -66,6 +66,6 @@ class V1::QueriesController < ApplicationController
   private
 
   def render_query(query, use_cache)
-    render :text => query.run(use_cache)
+    send_data query.run(use_cache)
   end
 end
