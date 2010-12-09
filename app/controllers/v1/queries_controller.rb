@@ -17,6 +17,15 @@ class V1::QueriesController < ApplicationController
     end
   end
 
+  def update
+    @query = Query.find(params[:id])
+    @query.update_attributes(params[:query])
+    @query.save!
+    render :json => {:mysparql_id => @query.to_param}
+  rescue ActiveRecord::RecordInvalid => invalid
+    render :json => {:error => invalid.record.errors.full_messages}, :status => 400
+  end
+
   def run
     @query = Query.find(params[:id])
     if @query.query == params[:query]

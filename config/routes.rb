@@ -1,6 +1,6 @@
 MySparql::Application.routes.draw do
   namespace :v1 do
-    resources :queries, :only => [:create, :show] do
+    resources :queries, :only => [:create, :show, :update] do
       member do
         post 'run'
         get 'data'
