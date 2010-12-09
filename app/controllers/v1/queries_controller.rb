@@ -40,7 +40,7 @@ class V1::QueriesController < ApplicationController
   def data
     @query = Query.find(params[:id])
     if @query.has_parameters? && !params.has_key?(:ignore_parameters)
-      render :json => {:parameters => @query.parameters
+      render :json => {:parameters => @query.parameters}
     else
       render :json => @query
     end
