@@ -20,6 +20,7 @@ class V1::QueriesController < ApplicationController
   def update
     @query = Query.find(params[:id])
     @query.update_attributes(params[:query])
+    @query.cache_json = @query.cache_xml = nil
     @query.save!
     render :json => {:mysparql_id => @query.to_param}
   rescue ActiveRecord::RecordInvalid => invalid
@@ -38,7 +39,11 @@ class V1::QueriesController < ApplicationController
 
   def data
     @query = Query.find(params[:id])
-    render :json => @query
+    if @query.has_parameters? && !params.has_key?(:ignore_parameters)
+      render :json => {:parameters => @query.parameters
+    else
+      render :json => @query
+    end
   end
 
   def preview
