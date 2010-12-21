@@ -36,6 +36,19 @@ class Query < ActiveRecord::Base
     !(xslt_path.blank? && xslt_sheet.blank?)
   end
 
+  def xslt_mime_type
+    case xslt_type
+      when "json"
+        "application/json"
+      when "html"
+        "text/html"
+      when "text"
+        "text/plain"
+      else
+        "text/html"
+    end
+  end
+
   def apply_xslt(xml)
     sheet = xslt_sheet || open(xslt_path)
     doc = Nokogiri::XML(xml)

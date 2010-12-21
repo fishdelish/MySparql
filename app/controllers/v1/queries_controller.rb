@@ -76,6 +76,15 @@ class V1::QueriesController < ApplicationController
   private
 
   def render_query(query, use_cache)
-    send_data query.run(use_cache)
+    options = {:type => "application/json"}
+    if query.has_xslt?
+      options[:type] = query.xslt_mime_type
+    end
+    logger.info "Returning data with content type: #{options[:type]}"
+    if options[:type] == 'text/html'
+      render :text => query.run(use_cache)
+    else
+      send_data query.run(use_cache), options
+    end
   end
 end

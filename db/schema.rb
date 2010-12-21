@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101209145811) do
+ActiveRecord::Schema.define(:version => 20101221120718) do
 
   create_table "queries", :force => true do |t|
     t.string   "query"
@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(:version => 20101209145811) do
     t.text     "cache_xml"
     t.string   "xslt_path"
     t.text     "xslt_sheet"
+    t.string   "xslt_type"
   end
 
   create_table "slugs", :force => true do |t|

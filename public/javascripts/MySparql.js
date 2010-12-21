@@ -126,8 +126,8 @@ var create_parameter_form = function(query_id, data) {
 
 // Utility functions
 
-var send_form_data = function(form, success_func, error_func, url) {
-  $.ajax({type : "POST", data : form.serialize(), dataType : "json", success : success_func, error : error_func, url : url});
+var send_form_data = function(form, dataType, success_func, error_func, url) {
+  $.ajax({type : "POST", data : form.serialize(), dataType : dataType, success : success_func, error : error_func, url : url});
 }
 
 var error_func = function(selector) {
@@ -140,25 +140,20 @@ var set_loading_status = function(selector) {
   $(selector).html(mysparql_loading);
 }
 
-var submit_tutorial_box = function(event, query_id) {
+var submit_tutorial_box = function(event, query, query_id, dataType, formatter) {
   var url = mysparql_path + '/queries/'+query_id+'/run'
   var results_selector = "#query-" + query_id + " .results"
   var success_func = function(data) {
-    $(results_selector).html(create_table(data))
+    $(results_selector).html(formatter($("#query-"+query_id+" .results"), query_id, data))
   };
   set_loading_status(results_selector);
-  send_form_data(event, success_func, error_func("#query-" + query_id + " .results"), url);
+  send_form_data(event, dataType, success_func, error_func("#query-" + query_id + " .results"), url);
   return false;
 };
 
 var get_formatter = function(query_type, query_id) {
     var formatter = {}
     switch (query_type) {
-      case "tutorial":
-        formatter.dataType = "json"
-        formatter.func = tutorial_formatter;
-        formatter.url = mysparql_path + "/queries/" + query_id + "/data"
-        break;
       case "table":
         formatter.dataType = "json"
         formatter.func = table_formatter;
@@ -169,6 +164,10 @@ var get_formatter = function(query_type, query_id) {
         formatter.dataType = "html"
         formatter.func = xslt_formatter;
         break;
+      case "google":
+        formatter.url = mysparql_path + "/queries/" + query_id
+        formatter.dataType = "json"
+        formatter.func = google_formatter;
       default:
         formatter.dataType = "json"
         formatter.func = table_formatter;
@@ -209,41 +208,67 @@ var parameter_query = function(query, data, dataType, formatter) {
   $(query).replaceWith(form);
 };
 
+
+// Tutorial mode
+
+var tutorial_query = function(query, query_id, data, dataType, formatter) {
+  var form = create_query_form(query_id, data);
+  $(query).html(form);
+  submit_tutorial_box(form, query, query_id, dataType, formatter)
+};
+
 // Formatters
 
-var tutorial_formatter = function(query, query_id, data) {
-  var form = create_query_form(query_id, data);
-  $(query).replaceWith(form);
-  submit_tutorial_box(form, query_id)
+var google_formatter = function(query, query_id, data) {
+
 };
 
 var table_formatter = function(query, query_id, data) {
-      $(query).replaceWith(create_table(data));
+  $(query).html(create_table(data));
 };
 
 var xslt_formatter = function(query, query_id, data) {
-  $(query).replaceWith(data)
+  $(query).html(data)
 };
 
 // MySparql loading
 
 $(document).ready(function() {
   $(".mysparql").each(function(index, query) {
-    var query_id = $(query).attr("href")
+    var query_id = $(query).attr("data-mysparql-id")
     var query_type = $(query).attr("data-formatter")
-    //Determine which formatter to use and set that formatter up
+    var tutorial = ($(query).attr("data-tutorial") == "true")
+    var parameterised = ($(query).attr("data-parameterised") == "true")
     var formatter = get_formatter(query_type, query_id);
+
     //Construct the success callback.
-    var success_func = function(data) {
-      if (typeof data == "string" && data.match(/{"parameters":/)) {
-        data = $.parseJSON(data)
-      }
-      if(data.parameters) {
-        parameter_query(query, data, formatter.dataType, formatter.func);
+    var param_success_func = function(data) {
+      if (tutorial) {
+        parameter_query(query, data, "json", function(query, query_id, data) {
+          tutorial_query(query, query_id, data, formatter.dataType, formatter.func);
+        });
       } else {
-        formatter.func(query, query_id, data);
-      }
+        parameter_query(query, data, formatter.dataType, formatter.func);
+      } 
     };
+    var tutorial_success_func = function(data) {
+      tutorial_query(query, query_id, data, formatter.dataType, formatter.func);
+    };
+    var normal_success_func = function(data) {
+      formatter.func(query, query_id, data);
+    };
+    var success_func;
+    var dataType = formatter.dataType;
+    if (parameterised) {
+      dataType = "json"
+      success_func = param_success_func;
+    } else if (tutorial) {
+      dataType = "json"
+      formatter.url += "/data"
+      success_func = tutorial_success_func;
+    } else {
+      success_func = normal_success_func;
+    }
 
     var error_func = function() {
       $(query).html("Error")
@@ -252,7 +277,7 @@ $(document).ready(function() {
     //Set up the mysparql link to indicate status and to deactivate clicking the link
     $(query).html(mysparql_loading)
     $(query).click(function() {return false;});
-    $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: formatter.dataType, error: error_func});  
+    $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: dataType, error: error_func});  
   });
 });
 
