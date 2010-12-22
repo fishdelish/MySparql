@@ -90,7 +90,7 @@ var create_break = function() {
 }
 
 var create_query_form = function(query_id, data) {
-  var form = $('<form id="query-' + query_id + '" method="post" onsubmit="return submit_tutorial_box($(this), \'' + query_id + '\');" />')
+  var form = $('<form id="query-' + query_id + '" method="post" />')
   form.append(create_label("query", "Query"));
   form.append(create_break());
   form.append(create_textarea(data["query"]["query"]));
@@ -168,6 +168,7 @@ var get_formatter = function(query_type, query_id) {
         formatter.url = mysparql_path + "/queries/" + query_id
         formatter.dataType = "json"
         formatter.func = google_formatter;
+        break;
       default:
         formatter.dataType = "json"
         formatter.func = table_formatter;
@@ -180,13 +181,14 @@ var get_formatter = function(query_type, query_id) {
 // Parameter Loading
 
 var parameter_query = function(query, data, dataType, formatter) {
-  var query_id = $(query).attr("href")
-  var query_type = $(query).attr("data-formatter");
+  var query_id = $(query).attr("data-mysparql-id")
+  var tutorial = $(query).attr("data-tutorial") == "true"
+  var query_type = $(query).attr("data-formatter")
   var form = create_parameter_form(query_id, data, query_type);
   form.submit(function() {
     var url = mysparql_path + '/queries/' + query_id
     
-    if (query_type == "tutorial") {
+    if (tutorial) {
       url += "/param_data"
     } else {
       url += "/param_query"
@@ -215,12 +217,33 @@ var tutorial_query = function(query, query_id, data, dataType, formatter) {
   var form = create_query_form(query_id, data);
   $(query).html(form);
   submit_tutorial_box(form, query, query_id, dataType, formatter)
+  $(form).submit(function(event) {
+    return submit_tutorial_box(form, query, query_id, dataType, formatter)
+  });
 };
 
 // Formatters
 
+var google_send_query = function(query, url, visualisation) {
+  var g_query = new google.visualization.Query(url)
+  g_query.send(function(response) {
+    google_query_response(response, query, visualisation)
+   });
+}
+
+var google_query_response = function(response, query, visualisation) {
+  if (response.isError()) {
+    $(query).html('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  var data = response.getDataTable();
+  var visualization = new google.visualization[visualisation](query);
+  visualization.draw(data);
+}
+
 var google_formatter = function(query, query_id, data) {
 
+  $(query).html("Got visualisation data")
 };
 
 var table_formatter = function(query, query_id, data) {
@@ -277,7 +300,12 @@ $(document).ready(function() {
     //Set up the mysparql link to indicate status and to deactivate clicking the link
     $(query).html(mysparql_loading)
     $(query).click(function() {return false;});
-    $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: dataType, error: error_func});  
+
+    if (query_type == "google") {
+      google_send_query(query, formatter.url, "Table")
+    } else {
+      $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: dataType, error: error_func});  
+    }
   });
 });
 

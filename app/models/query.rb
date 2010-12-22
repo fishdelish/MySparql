@@ -39,7 +39,7 @@ class Query < ActiveRecord::Base
   def xslt_mime_type
     case xslt_type
       when "json"
-        "application/json"
+        "text/json"
       when "html"
         "text/html"
       when "text"
@@ -50,7 +50,7 @@ class Query < ActiveRecord::Base
   end
 
   def apply_xslt(xml)
-    sheet = xslt_sheet || open(xslt_path)
+    sheet = xslt_sheet.blank? ? open(xslt_path) : xslt_sheet 
     doc = Nokogiri::XML(xml)
     sheet = Nokogiri::XSLT(sheet)
     sheet.transform(doc) 

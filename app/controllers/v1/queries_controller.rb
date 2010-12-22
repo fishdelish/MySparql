@@ -84,7 +84,8 @@ class V1::QueriesController < ApplicationController
     if options[:type] == 'text/html'
       render :text => query.run(use_cache)
     else
-      send_data query.run(use_cache), options
+      result = query.run(use_cache)
+      send_data result.children[0], options
     end
   end
 end
