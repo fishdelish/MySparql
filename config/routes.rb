@@ -3,8 +3,10 @@ MySparql::Application.routes.draw do
     resources :queries, :only => [:create, :show, :update] do
       member do
         post 'run'
+        get 'run'
         get 'data'
         post 'param_query'
+        get 'param_query'
         post 'param_data'
       end
       collection do

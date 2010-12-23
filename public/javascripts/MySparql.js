@@ -147,7 +147,11 @@ var submit_tutorial_box = function(event, query, query_id, dataType, formatter) 
     $(results_selector).html(formatter($("#query-"+query_id+" .results"), query_id, data))
   };
   set_loading_status(results_selector);
-  send_form_data(event, dataType, success_func, error_func("#query-" + query_id + " .results"), url);
+  if (formatter == google_formatter) {
+    google_send_query($(results_selector)[0], url + "?" + event.serialize(), "Table")    
+  } else {
+    send_form_data(event, dataType, success_func, error_func("#query-" + query_id + " .results"), url);
+  }
   return false;
 };
 
@@ -203,7 +207,11 @@ var parameter_query = function(query, data, dataType, formatter) {
     }
 
     $("#param-" + query_id + " .results").html(mysparql_loading)
-    $.ajax({type : "POST", data : $(form).serialize(), dataType : dataType, success : success_func, url : url, error: error_func});
+    if (query_type == "google" && !tutorial) {
+      google_send_query($("#param-" + query_id + " .results")[0], url + "?" + $(form).serialize(), "Table");
+    } else {
+      $.ajax({type : "POST", data : $(form).serialize(), dataType : dataType, success : success_func, url : url, error: error_func});
+    }
     return false;
   });
 
@@ -242,8 +250,7 @@ var google_query_response = function(response, query, visualisation) {
 }
 
 var google_formatter = function(query, query_id, data) {
-
-  $(query).html("Got visualisation data")
+  //placeholder for google detection
 };
 
 var table_formatter = function(query, query_id, data) {
@@ -301,7 +308,7 @@ $(document).ready(function() {
     $(query).html(mysparql_loading)
     $(query).click(function() {return false;});
 
-    if (query_type == "google") {
+    if (query_type == "google" && !(tutorial || parameterised)) {
       google_send_query(query, formatter.url, "Table")
     } else {
       $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: dataType, error: error_func});  
