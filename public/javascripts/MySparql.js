@@ -140,7 +140,7 @@ var set_loading_status = function(selector) {
   $(selector).html(mysparql_loading);
 }
 
-var submit_tutorial_box = function(event, query, query_id, dataType, formatter) {
+var submit_tutorial_box = function(event, query, query_id, dataType, formatter, viz) {
   var url = mysparql_path + '/queries/'+query_id+'/run'
   var results_selector = "#query-" + query_id + " .results"
   var success_func = function(data) {
@@ -148,7 +148,7 @@ var submit_tutorial_box = function(event, query, query_id, dataType, formatter) 
   };
   set_loading_status(results_selector);
   if (formatter == google_formatter) {
-    google_send_query($(results_selector)[0], url + "?" + event.serialize(), "Table")    
+    google_send_query($(results_selector)[0], url + "?" + event.serialize(), viz)    
   } else {
     send_form_data(event, dataType, success_func, error_func("#query-" + query_id + " .results"), url);
   }
@@ -189,6 +189,7 @@ var parameter_query = function(query, data, dataType, formatter) {
   var tutorial = $(query).attr("data-tutorial") == "true"
   var query_type = $(query).attr("data-formatter")
   var form = create_parameter_form(query_id, data, query_type);
+  var viz = $(query).attr("data-google-viz")
   form.submit(function() {
     var url = mysparql_path + '/queries/' + query_id
     
@@ -208,7 +209,7 @@ var parameter_query = function(query, data, dataType, formatter) {
 
     $("#param-" + query_id + " .results").html(mysparql_loading)
     if (query_type == "google" && !tutorial) {
-      google_send_query($("#param-" + query_id + " .results")[0], url + "?" + $(form).serialize(), "Table");
+      google_send_query($("#param-" + query_id + " .results")[0], url + "?" + $(form).serialize(), viz);
     } else {
       $.ajax({type : "POST", data : $(form).serialize(), dataType : dataType, success : success_func, url : url, error: error_func});
     }
@@ -221,12 +222,12 @@ var parameter_query = function(query, data, dataType, formatter) {
 
 // Tutorial mode
 
-var tutorial_query = function(query, query_id, data, dataType, formatter) {
+var tutorial_query = function(query, query_id, data, dataType, formatter, viz) {
   var form = create_query_form(query_id, data);
   $(query).html(form);
-  submit_tutorial_box(form, query, query_id, dataType, formatter)
+  submit_tutorial_box(form, query, query_id, dataType, formatter, viz)
   $(form).submit(function(event) {
-    return submit_tutorial_box(form, query, query_id, dataType, formatter)
+    return submit_tutorial_box(form, query, query_id, dataType, formatter, viz)
   });
 };
 
@@ -270,19 +271,20 @@ $(document).ready(function() {
     var tutorial = ($(query).attr("data-tutorial") == "true")
     var parameterised = ($(query).attr("data-parameterised") == "true")
     var formatter = get_formatter(query_type, query_id);
+    var viz = $(query).attr("data-google-viz")
 
     //Construct the success callback.
     var param_success_func = function(data) {
       if (tutorial) {
         parameter_query(query, data, "json", function(query, query_id, data) {
-          tutorial_query(query, query_id, data, formatter.dataType, formatter.func);
+          tutorial_query(query, query_id, data, formatter.dataType, formatter.func, viz);
         });
       } else {
         parameter_query(query, data, formatter.dataType, formatter.func);
       } 
     };
     var tutorial_success_func = function(data) {
-      tutorial_query(query, query_id, data, formatter.dataType, formatter.func);
+      tutorial_query(query, query_id, data, formatter.dataType, formatter.func, viz);
     };
     var normal_success_func = function(data) {
       formatter.func(query, query_id, data);
@@ -309,7 +311,7 @@ $(document).ready(function() {
     $(query).click(function() {return false;});
 
     if (query_type == "google" && !(tutorial || parameterised)) {
-      google_send_query(query, formatter.url, "Table")
+      google_send_query(query, formatter.url, viz)
     } else {
       $.ajax({type: "GET", url: formatter.url, success: success_func, dataType: dataType, error: error_func});  
     }
