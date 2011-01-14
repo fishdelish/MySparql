@@ -85,7 +85,8 @@ class V1::QueriesController < ApplicationController
       render :text => query.run(use_cache)
     else
       result = query.run(use_cache)
-      send_data result.children[0], options
+      result = result.children[0] if query.has_xslt?
+      send_data result, options
     end
   end
 end
