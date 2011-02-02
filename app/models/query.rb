@@ -68,6 +68,7 @@ class Query < ActiveRecord::Base
     Rails.logger.info("Querying #{source} with #{query}")
     url = URI.parse(source)
     http = Net::HTTP.new(url.host, url.port)
+    http.read_timeout = 3600
     http.post(url.path, "query=#{CGI.escape(query)}", {"Accept" => mime_type}).body
   end
 
