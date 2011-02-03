@@ -226,10 +226,12 @@ var parameter_query = function(query, data, dataType, formatter) {
 var tutorial_query = function(query, query_id, data, dataType, formatter, viz) {
   var form = create_query_form(query_id, data);
   $(query).html(form);
-  submit_tutorial_box(form, query, query_id, dataType, formatter, viz)
-  $(form).submit(function(event) {
+  var button = $(form).find("input[type=submit]")
+  button.click(function(event) {
+    alert("here")
     return submit_tutorial_box(form, query, query_id, dataType, formatter, viz)
   });
+  button.click();
 };
 
 // Formatters
