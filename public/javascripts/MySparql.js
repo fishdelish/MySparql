@@ -228,7 +228,6 @@ var tutorial_query = function(query, query_id, data, dataType, formatter, viz) {
   $(query).html(form);
   var button = $(form).find("input[type=submit]")
   button.click(function(event) {
-    alert("here")
     return submit_tutorial_box(form, query, query_id, dataType, formatter, viz)
   });
   button.click();
