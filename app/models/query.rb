@@ -22,7 +22,7 @@ class Query < ActiveRecord::Base
   end
 
   def parameters
-    query.scan(PARAMETER_REGEX).map {|p| p[1...-1] }
+    query.scan(PARAMETER_REGEX).map {|p| p[1...-1] }.uniq
   end
 
   def substitute_parameters(params)
