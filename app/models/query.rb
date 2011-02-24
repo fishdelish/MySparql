@@ -69,7 +69,7 @@ class Query < ActiveRecord::Base
     url = URI.parse(source)
     http = Net::HTTP.new(url.host, url.port)
     http.read_timeout = 3600
-    http.post(url.path, "query=#{CGI.escape(query)}", {"Accept" => mime_type}).body
+    http.get(url.path + "?query=#{CGI.escape(query)}", {"Accept" => mime_type}).body
   end
 
   def json(use_cache = false)
